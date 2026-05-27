@@ -152,45 +152,6 @@ struct Framebutter{
 };
 
 int main(){
-    Vec3 a={3, 4, 0};//向量加減
-    Vec3 b={1, 0, 0};
-
-    Vec3 c = a + b;
-    std::cout << c.x << " " << c.y << " " << c.z << std::endl;
-
-    float len = a.length();//向量長度
-    std::cout << len << std::endl;
-
-    Vec3 n = a.normalize();//標準化1
-    std::cout << n.x << " " << n.y << " " << n.z << std::endl;
-    Vec3 up = {0, 1, 0};
-    Vec3 light = {0, 1, 0};
-    std::cout << up.dot(light) << std::endl;
-
-    Vec3 side = {1, 0, 0};//內積
-    std::cout << up.dot(side) << std::endl;
-
-    Vec3 x_axis = {1, 0, 0};//外積
-    Vec3 y_axis = {0, 1, 0};
-    Vec3 z = x_axis.cross(y_axis);
-    std::cout << z.x << " " << z.y << " " << z.z << std::endl;
-
-    Mat4 m = Mat4::identity();
-    std::cout << m.m[0][0] << " " << m.m[1][1] << std::endl;
-
-    Mat4 ma = Mat4::identity();
-    Mat4 mb = Mat4::identity();
-    Mat4 mc = ma * mb;
-    std::cout << mc.m[0][0] << " " << mc.m[1][1] << std::endl;
-
-    Mat4 t = Mat4::translation(3, 0, 0);
-    std::cout << t.m[0][3] << std::endl;
-
-    Mat4 s = Mat4::scale(2, 2, 2);
-    std::cout << s.m[0][0] << " " << s.m[1][1] << std::endl;
-
-    Mat4 rz = Mat4::rotationZ(3.14159f / 2);
-    std::cout << rz.m[0][0]<< " " << rz.m[1][0]<<std::endl;
 
     Framebutter fb;
     fb.clear({255, 255, 0, 0});
