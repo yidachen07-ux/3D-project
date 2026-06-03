@@ -1,5 +1,6 @@
 #include<iostream>//editor.quickSuggestions
 #include <fstream>
+#include <cstdint>
 #include<vector>
 #include<cmath>
 
@@ -122,24 +123,24 @@ struct Color{//顏色
 };
 
 struct Framebutter{
-    Color pixels [800][600];
+    Color pixels [800][600];//畫布大小
     int width = 800;
     int height = 600;
     void setpixels (int x, int y, Color c){
         pixels [x][y] = c;
     }
-    void clear (Color c){
+    void clear (Color c){//畫出畫布
         for (int i=0;i<800;i++){
             for(int j=0;j<600;j++)
             setpixels(i, j, c);
         }
     }
-    void savePPM(const std::string& filename){
+    void savePPM(const std::string& filename){//畫布匯出.ppm
         std::ofstream outfile(filename);
         outfile << "P3\n";
         outfile << width << " " << height << "\n";
         outfile << "255\n";
-        for (int i=599;i>=0;i--){
+        for (int i=599;i>=0;i--){//反轉畫布
             for (int j=0;j<800;j++){
             Color c = pixels [j][i];
             outfile << (int) c.r << " " << (int) c.g << " " << (int) c.b <<"\n";
@@ -148,7 +149,11 @@ struct Framebutter{
         }
         outfile.close();
     }
-    
+    void drawLine(int x0, int y0, int x1 ,int y1, Color c){
+        Vec3 diff = Vec3 (x1-x0, y1-y0 ,0);
+        float dist = diff.length();
+        
+    }
 };
 
 int main(){
@@ -159,6 +164,7 @@ int main(){
     for(int x = 390; x < 410; x++)
         for(int y = 290; y < 310; y++)
          fb.setpixels(x, y, {255, 255, 255, 255});
+    fb.savePPM("output.ppm");
     return 0;
 
 }
