@@ -22,8 +22,7 @@ struct Mat4{//4*4矩陣
         float m[4][4];
     static Mat4 identity(){
     Mat4 r;
-    for(int i=0
-        ;i<4;i++){   //對角矩陣
+    for(int i=0;i<4;i++){   //對角矩陣
         for(int j=0;j<4;j++)
         if (i==j){
          r.m[i][j]=1;}
@@ -122,7 +121,7 @@ struct Color{//顏色
     uint8_t a ,r, g, b;
 };
 
-struct Framebutter{
+struct Framebutte{
     Color pixels [800][600];//畫布大小
     int width = 800;
     int height = 600;
@@ -142,29 +141,62 @@ struct Framebutter{
         outfile << "255\n";
         for (int i=599;i>=0;i--){//反轉畫布
             for (int j=0;j<800;j++){
-            Color c = pixels [j][i];
-            outfile << (int) c.r << " " << (int) c.g << " " << (int) c.b <<"\n";
+                Color c = pixels [j][i];
+                outfile << (int) c.r << " " << (int) c.g << " " << (int) c.b <<"\n";
             }
             outfile << "\n";
         }
         outfile.close();
     }
     void drawLine(int x0, int y0, int x1 ,int y1, Color c){
-        Vec3 diff = Vec3 (x1-x0, y1-y0 ,0);
-        float dist = diff.length();
-        
-    }
+        int dx = x1 - x0;
+        int dy = y1 - y0;
+        int y = y0;
+        int x = x0;
+        int P = 2 * dy - dx;
+        if(x0>x1){
+            std::swap(x0, x1);
+            std::swap(y0, y1);
+        }
+        if(dx>dy){ 
+        for(int x=x0; x<=x1; x++){//Bresenham演算法斜率0~1
+            setpixels(x, y, c);
+                if(P>=0){
+                y = y + 1;
+                P = P + 2 * dy - 2 * dx;
+                }
+                else {
+                P = P + 2 * dy;
+                }
+            }
+        }
+        else{
+            std::swap(dx, dy);//Bresenham演算法斜率>1
+            
+            for(int y=y0; y<=y1; y++){
+            setpixels(y, x, c);
+                if(P>=0){
+                x = x + 1;
+                P = P + 2 * dx - 2 * dy;
+                }
+                else{
+                P = P + 2 * dy;
+                }
+            }
+        }
+    
+    };
 };
-
 int main(){
 
-    Framebutter fb;
+    Framebutte fb;
     fb.clear({255, 255, 0, 0});
-    fb.savePPM("output.ppm");
     for(int x = 390; x < 410; x++)
         for(int y = 290; y < 310; y++)
          fb.setpixels(x, y, {255, 255, 255, 255});
+    fb.drawLine(100, 100, 400, 200, {255, 255, 255, 255});
+    fb.drawLine(400, 300, 0, 600, {255, 255, 255, 255});
+    fb.drawLine(400, 200, 100, 100, {255, 255, 255, 255});
     fb.savePPM("output.ppm");
     return 0;
-
 }
