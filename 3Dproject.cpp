@@ -14,8 +14,7 @@ struct Vec3{//operator定義符號+-*/
     float length   () const { return sqrt ( x*x + y*y + z*z ); }//向量長度
     Vec3  normalize() const { return Vec3 ( x/length(), y/length(), z/length()); }//標準化1
     float dot  (const Vec3& other) const {return ( x*other.x+ y*other.y+ z*other.z); }//向量內積
-    Vec3  cross(const Vec3& other) const {return Vec3( y*other.z-other.y*z, z*other.x-other.z*x, x*other.y-other.x*y);}//向量外積
-    
+    Vec3  cross(const Vec3& other) const {return Vec3( y*other.z-other.y*z, z*other.x-other.z*x, x*other.y-other.x*y);}//向量外積 
 };
 
 struct Mat4{//4*4矩陣
@@ -149,44 +148,39 @@ struct Framebutte{
         outfile.close();
     }
     void drawLine(int x0, int y0, int x1 ,int y1, Color c){
-        int dx = x1 - x0;
-        int dy = y1 - y0;
-        int y = y0;
-        int x = x0;
-        int P = 2 * dy - dx;
-        if(x0>x1){
+        bool steep = std::abs(x0 - x1) < std::abs(y0 - y1);//if steep 1=ture
+        if (steep){//如果斜率大於一把x軸y軸調換(以x=y調換)
+            std::swap(x0, y0);
+            std::swap(x1, y1);
+        }
+        if(x0 > x1){//如果起點>終點調換(從終點開始)
             std::swap(x0, x1);
             std::swap(y0, y1);
         }
-        if(dx>dy){ 
+        int dx = x1 - x0;
+        int dy = y1 - y0;
+        int y = y0;
+        int ystep = (y1<y0) ? -1 : 1;
+        int P = 2 * std::abs(dy) - dx;
         for(int x=x0; x<=x1; x++){//Bresenham演算法斜率0~1
-            setpixels(x, y, c);
-                if(P>=0){
-                y = y + 1;
-                P = P + 2 * dy - 2 * dx;
-                }
-                else {
-                P = P + 2 * dy;
-                }
-            }
-        }
-        else{
-            std::swap(dx, dy);//Bresenham演算法斜率>1
-            
-            for(int y=y0; y<=y1; y++){
+            if(steep){
             setpixels(y, x, c);
-                if(P>=0){
-                x = x + 1;
-                P = P + 2 * dx - 2 * dy;
-                }
-                else{
-                P = P + 2 * dy;
-                }
             }
+            else{
+            setpixels(x, y, c);
+            }
+            if(P>=0){
+            y += ystep;
+            P = P + 2 * std::abs(dy) - 2 * dx;
+            }
+            else {
+            P = P + 2 * std::abs(dy);
+            }   
         }
-    
-    };
+    }
+
 };
+
 int main(){
 
     Framebutte fb;
