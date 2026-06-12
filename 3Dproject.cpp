@@ -3,6 +3,13 @@
 #include <cstdint>
 #include<vector>
 #include<cmath>
+struct Vec3;
+struct Mat4;
+struct Color;
+struct Framebutte;
+struct drawline;
+struct drawtriangle;
+
 
 struct Vec3{//operator定義符號+-*/
     float x, y, z;
@@ -113,7 +120,6 @@ struct Mat4{//4*4矩陣
         r.m[2][2]=cos(angle);
         return r;
     }
-    
 };
 
 struct Color{//顏色
@@ -178,19 +184,55 @@ struct Framebutte{
             }   
         }
     }
+    void drawtriangle(Vec3 v0, Vec3 v1, Vec3 v2, Color c){
+        int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );
+        int y0 = (int)( (v0.y / v0.z) * (height/ 2) + (height/ 2) );
 
+        int x1 = (int)( (v1.x / v1.z) * (width / 2) + (width / 2) );
+        int y1 = (int)( (v1.y / v1.z) * (height/ 2) + (height/ 2) );
+
+        int x2 = (int)( (v2.x / v2.z) * (width / 2) + (width / 2) );
+        int y2 = (int)( (v2.y / v2.z) * (height/ 2) + (height/ 2) );
+
+        drawLine(x0, y0, x1, y1, c);
+        drawLine(x0, y0, x2, y2, c);
+        drawLine(x1, y1, x2, y2, c);
+    } 
+    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Color c){
+         int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );
+        int y0 = (int)( (v0.y / v0.z) * (height/ 2) + (height/ 2) );
+
+        int x1 = (int)( (v1.x / v1.z) * (width / 2) + (width / 2) );
+        int y1 = (int)( (v1.y / v1.z) * (height/ 2) + (height/ 2) );
+
+        int x2 = (int)( (v2.x / v2.z) * (width / 2) + (width / 2) );
+        int y2 = (int)( (v2.y / v2.z) * (height/ 2) + (height/ 2) );
+
+        int maxX = std::max(x0, std::max(x1, x2));
+        int minX = std::min(x0, std::min(x1, x2));
+        int maxY = std::max(y0, std::max(y1, y2));
+        int minY = std::min(y0, std::min(y1, y2));
+    }
 };
 
 int main(){
-
     Framebutte fb;
     fb.clear({255, 255, 0, 0});
-    for(int x = 390; x < 410; x++)
-        for(int y = 290; y < 310; y++)
-         fb.setpixels(x, y, {255, 255, 255, 255});
+    
+    
     fb.drawLine(100, 100, 400, 200, {255, 255, 255, 255});
     fb.drawLine(400, 300, 0, 600, {255, 255, 255, 255});
     fb.drawLine(400, 200, 100, 100, {255, 255, 255, 255});
+    
+    Vec3 p0(-0.5f, -0.5f, 2.0f); // 左下
+    Vec3 p1( 0.5f, -0.5f, 2.0f); // 右下
+    Vec3 p2( 0.0f,  0.5f, 2.0f); // 正上頂點
+
+    // 呼叫你親手刻完的 3D 三角形外框函式，顏色一樣用純白
+    fb.drawtriangle(p0, p1, p2, {255, 255, 255, 255});
+    
+
     fb.savePPM("output.ppm");
     return 0;
+
 }
