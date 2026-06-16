@@ -1,6 +1,7 @@
 #include<iostream>//editor.quickSuggestions
 #include <fstream>
 #include <cstdint>
+#include <algorithm>
 #include<vector>
 #include<cmath>
 struct Vec3;
@@ -127,15 +128,18 @@ struct Color{//顏色
 };
 
 struct Framebutte{
-    Color pixels [800][600];//畫布大小
-    int width = 800;
-    int height = 600;
+    int width = 1920;
+    int height = 1080;
+    std::vector< Color > pixels;
+    Framebutte() : pixels(width * height){};
     void setpixels (int x, int y, Color c){
-        pixels [x][y] = c;
+        if(x >= 0 && x < width && y >= 0 && y < height){
+            pixels [width * y + x] = c;
+        }
     }
     void clear (Color c){//畫出畫布
-        for (int i=0;i<800;i++){
-            for(int j=0;j<600;j++)
+        for (int i = 0; i < width; i++){
+            for(int j = 0; j < height; j++)
             setpixels(i, j, c);
         }
     }
@@ -144,9 +148,9 @@ struct Framebutte{
         outfile << "P3\n";
         outfile << width << " " << height << "\n";
         outfile << "255\n";
-        for (int i=599;i>=0;i--){//反轉畫布
-            for (int j=0;j<800;j++){
-                Color c = pixels [j][i];
+        for (int y = height -1 ;y >= 0; y--){//反轉畫布
+            for (int x = 0;x < width; x++){
+                Color c = pixels [width * y + x];
                 outfile << (int) c.r << " " << (int) c.g << " " << (int) c.b <<"\n";
             }
             outfile << "\n";
@@ -166,9 +170,9 @@ struct Framebutte{
         int dx = x1 - x0;
         int dy = y1 - y0;
         int y = y0;
-        int ystep = (y1<y0) ? -1 : 1;
+        int ystep = (y1 < y0) ? -1 : 1;
         int P = 2 * std::abs(dy) - dx;
-        for(int x=x0; x<=x1; x++){//Bresenham演算法斜率0~1
+        for(int x = x0; x <= x1; x++){//Bresenham演算法斜率0~1
             if(steep){
             setpixels(y, x, c);
             }
@@ -185,7 +189,7 @@ struct Framebutte{
         }
     }
     void drawtriangle(Vec3 v0, Vec3 v1, Vec3 v2, Color c){
-        int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );
+        int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );//Vec3轉換螢幕座標
         int y0 = (int)( (v0.y / v0.z) * (height/ 2) + (height/ 2) );
 
         int x1 = (int)( (v1.x / v1.z) * (width / 2) + (width / 2) );
@@ -199,7 +203,7 @@ struct Framebutte{
         drawLine(x1, y1, x2, y2, c);
     } 
     void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Color c){
-         int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );
+        int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );//Vec3轉換螢幕座標
         int y0 = (int)( (v0.y / v0.z) * (height/ 2) + (height/ 2) );
 
         int x1 = (int)( (v1.x / v1.z) * (width / 2) + (width / 2) );
@@ -208,11 +212,32 @@ struct Framebutte{
         int x2 = (int)( (v2.x / v2.z) * (width / 2) + (width / 2) );
         int y2 = (int)( (v2.y / v2.z) * (height/ 2) + (height/ 2) );
 
-        int maxX = std::max(x0, std::max(x1, x2));
-        int minX = std::min(x0, std::min(x1, x2));
-        int maxY = std::max(y0, std::max(y1, y2));
-        int minY = std::min(y0, std::min(y1, y2));
+        int maxX = std::max(x0, std::max (x1, x2) );//畫出四邊形
+        int minX = std::min(x0, std::min (x1, x2) );
+        int maxY = std::max(y0, std::max (y1, y2) );
+        int minY = std::min(y0, std::min (y1, y2) );
+
+        for(int x = minX; x <= maxX; x++){//
+            for(int y = minY; y <= maxY; y++){
+                int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
+                int cross1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
+                int cross2 = (x0 - x2) * (y - y2) - (y0 - y2) * (x - x2);
+                if( cross0 >= 0 && cross1 >= 0 && cross2 >= 0 || cross0 <= 0 && cross1 <= 0 && cross2 <= 0){
+                    setpixels(x, y, c);
+                }
+            }
+        }
     }
+};
+
+struct triangle{
+    Vec3 v0;
+    Vec3 v1;
+    Vec3 v2;
+};
+
+struct Model{
+    std::vector <triangle> triangles;
 };
 
 int main(){
@@ -220,16 +245,17 @@ int main(){
     fb.clear({255, 255, 0, 0});
     
     
-    fb.drawLine(100, 100, 400, 200, {255, 255, 255, 255});
-    fb.drawLine(400, 300, 0, 600, {255, 255, 255, 255});
-    fb.drawLine(400, 200, 100, 100, {255, 255, 255, 255});
+    // fb.drawLine(100, 100, 400, 200, {255, 255, 255, 255});
+    // fb.drawLine(400, 375, 0, 600, {255, 255, 255, 255});
+    // fb.drawLine(400, 224, 100, 100, {255, 255, 255, 255});
     
     Vec3 p0(-0.5f, -0.5f, 2.0f); // 左下
     Vec3 p1( 0.5f, -0.5f, 2.0f); // 右下
     Vec3 p2( 0.0f,  0.5f, 2.0f); // 正上頂點
 
-    // 呼叫你親手刻完的 3D 三角形外框函式，顏色一樣用純白
-    fb.drawtriangle(p0, p1, p2, {255, 255, 255, 255});
+
+    //fb.drawtriangle(p0, p1, p2, {255, 255, 255, 255});
+    fb.filltriangle(p0, p1, p2, {255, 255, 255, 255});
     
 
     fb.savePPM("output.ppm");
