@@ -1,4 +1,6 @@
-#include<iostream>//editor.quickSuggestions
+#include<iostream>
+#include<fstream>
+#include<sstream>
 #include <fstream>
 #include <cstdint>
 #include <algorithm>
@@ -9,11 +11,10 @@ struct Mat4;
 struct Color;
 struct Framebutte;
 struct drawline;
-struct drawtriangle;
-
 
 struct Vec3{//operator定義符號+-*/
     float x, y, z;
+    Vec3() : x(0), y(0), z(0) {}
     Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
     Vec3  operator+(const Vec3& other) const { return Vec3(x+other.x, y+other.y, z+other.z); }//向量加法
     Vec3  operator-(const Vec3& other) const { return Vec3(x-other.x, y-other.y, z-other.z); }//向量減法
@@ -127,13 +128,13 @@ struct Color{//顏色
     uint8_t a ,r, g, b;
 };
 
-struct Framebutte{
-    int width = 1920;
-    int height = 1080;
+struct Framebutte{//畫布,斜線,解析度,三角形,光柵化
+    int width = 1920;//解析度寬度
+    int height = 1080;//解析度高度
     std::vector< Color > pixels;
     Framebutte() : pixels(width * height){};
     void setpixels (int x, int y, Color c){
-        if(x >= 0 && x < width && y >= 0 && y < height){
+        if(x >= 0 && x < width && y >= 0 && y < height){//判斷是否出界
             pixels [width * y + x] = c;
         }
     }
@@ -172,7 +173,7 @@ struct Framebutte{
         int y = y0;
         int ystep = (y1 < y0) ? -1 : 1;
         int P = 2 * std::abs(dy) - dx;
-        for(int x = x0; x <= x1; x++){//Bresenham演算法斜率0~1
+        for(int x = x0; x <= x1; x++){//Bresenham演算法
             if(steep){
             setpixels(y, x, c);
             }
@@ -222,7 +223,7 @@ struct Framebutte{
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
                 int cross1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
                 int cross2 = (x0 - x2) * (y - y2) - (y0 - y2) * (x - x2);
-                if( cross0 >= 0 && cross1 >= 0 && cross2 >= 0 || cross0 <= 0 && cross1 <= 0 && cross2 <= 0){
+                if(cross0 >= 0 && cross1 >= 0 && cross2 >= 0 || cross0 <= 0 && cross1 <= 0 && cross2 <= 0){
                     setpixels(x, y, c);
                 }
             }
@@ -238,26 +239,63 @@ struct triangle{
 
 struct Model{
     std::vector <triangle> triangles;
+
+    bool loadobj(std::string filename){
+        std::ifstream file(filename);
+        if(!file.is_open()){
+            std::cout << "error";
+            return false;
+        }
+        std::string line;
+        std::vector <Vec3> vertices;
+        while(std::getline(file,line)){
+            if (line[0]=='v'){
+                std::istringstream iss(line);
+                std::string prefix;
+                float x, y, z;
+                iss >> prefix >> x >> y >> z;
+                vertices.push_back(Vec3(x, y, z));
+            }
+            if(line[0]=='f'){
+                
+            }
+            }
+            return true;
+        }
+   
+   
+    
 };
 
 int main(){
     Framebutte fb;
     fb.clear({255, 255, 0, 0});
     
-    
-    // fb.drawLine(100, 100, 400, 200, {255, 255, 255, 255});
-    // fb.drawLine(400, 375, 0, 600, {255, 255, 255, 255});
-    // fb.drawLine(400, 224, 100, 100, {255, 255, 255, 255});
-    
-    Vec3 p0(-0.5f, -0.5f, 2.0f); // 左下
-    Vec3 p1( 0.5f, -0.5f, 2.0f); // 右下
-    Vec3 p2( 0.0f,  0.5f, 2.0f); // 正上頂點
-
-
-    //fb.drawtriangle(p0, p1, p2, {255, 255, 255, 255});
-    fb.filltriangle(p0, p1, p2, {255, 255, 255, 255});
+    Model myModel;       // 這是你的模型貨櫃
+    triangle t;          // 這是你剛做好的手工三角形
+    t.v0.x = 0; t.v0.y = 0; t.v0.z = 1.0;
+    t.v1.x = 1; t.v1.y = 0; t.v1.z = 1.0;
+    t.v2.x = 0; t.v2.y = 1; t.v2.z = 1.0;
     
 
+    myModel.triangles.push_back(t);
+
+    // 💡 呼叫畫三角形的函式，把畫布 fb 和模型裡的三角形丟進去
+    // fb.drawtriangle(
+    //     myModel.triangles[0].v0,
+    //     myModel.triangles[0].v1,
+    //     myModel.triangles[0].v2,
+    //     {255, 255, 255, 255}
+    // );
+
+    fb.drawtriangle(
+    myModel.triangles[0].v0, 
+    myModel.triangles[0].v1, 
+    myModel.triangles[0].v2, 
+    Color{255, 255, 255, 255}
+    );
+    myModel.triangles.push_back(t);
+    
     fb.savePPM("output.ppm");
     return 0;
 
