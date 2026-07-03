@@ -20,76 +20,76 @@ struct Vec3{//operator定義符號+-*/
     Vec3  operator-(const Vec3& other) const { return Vec3(x-other.x, y-other.y, z-other.z); }//向量減法
     Vec3  operator*(float s) const { return Vec3(x*s, y*s, z*s); }//向量乘法
     Vec3  operator/(float s) const { return Vec3(x/s, y/s, z/s); }//向量除法
-    float length   () const { return sqrt ( x*x + y*y + z*z ); }//向量長度
+    float length() const { return sqrt ( x*x + y*y + z*z ); }//向量長度
     Vec3  normalize() const { return Vec3 ( x/length(), y/length(), z/length()); }//標準化1
-    float dot  (const Vec3& other) const {return ( x*other.x+ y*other.y+ z*other.z); }//向量內積
+    float dot(const Vec3& other) const {return ( x*other.x+ y*other.y+ z*other.z); }//向量內積
     Vec3  cross(const Vec3& other) const {return Vec3( y*other.z-other.y*z, z*other.x-other.z*x, x*other.y-other.x*y);}//向量外積 
 };
 
 struct Mat4{//4*4矩陣
         float m[4][4];
-    static Mat4 identity(){
+    static Mat4 identity(){//對角矩陣
     Mat4 r;
-    for(int i=0;i<4;i++){   //對角矩陣
-        for(int j=0;j<4;j++)
-        if (i==j){
-         r.m[i][j]=1;}
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++)
+        if (i == j){
+         r.m[i][j] = 1;}
         else {
-         r.m[i][j]=0;}
+         r.m[i][j]= 0 ;}
         }
         return r;
     }
     Mat4 operator* (const Mat4& other)const{//矩陣乘法
     Mat4 result{};
-        for (int i=0;i<4;i++){
-            for(int j=0;j<4;j++)
-                for(int k=0;k<4;k++)
+        for (int i = 0;i < 4 ; i++){
+            for(int j = 0; j < 4; j++)
+                for(int k = 0; k < 4; k++)
                 result.m[i][j] += m[i][k] * other.m[k][j];                  
         }
             return result;
     }
    
-    static Mat4 translation(float tx, float ty, float tz) {
+    static Mat4 translation(float tx, float ty, float tz){//平移矩陣
     Mat4 r;
-    for(int i=0;i<4;i++){   //平移矩陣
-        for(int j=0;j<4;j++)
-        if (i==j){
-         r.m[i][j]=1;}
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++)
+        if (i == j){
+         r.m[i][j] = 1;}
         else {
-         r.m[i][j]=0;}
+         r.m[i][j] = 0;}
         }
-        r.m[0][3]= tx;
-        r.m[1][3]= ty;
-        r.m[2][3]= tz;
+        r.m[0][3] = tx;
+        r.m[1][3] = ty;
+        r.m[2][3] = tz;
         return r;
     }
     static Mat4 scale(float sx, float sy, float sz) {//旋轉矩陣
     Mat4 r;
-    for(int i=0;i<4;i++){   
-        for(int j=0;j<4;j++)
-        if (i==j){
-         r.m[i][j]=1;}
+    for(int i = 0; i < 4; i++){   
+        for(int j = 0; j < 4; j++)
+        if (i == j){
+         r.m[i][j] = 1;}
         else {
-         r.m[i][j]=0;}
+         r.m[i][j] = 0;}
         }
-        r.m[0][0]=sx;
-        r.m[1][1]=sy;
-        r.m[2][2]=sz;
+        r.m[0][0] = sx;
+        r.m[1][1] = sy;
+        r.m[2][2] = sz;
         return r;
     }
     static Mat4 rotationZ(float angle) {//z旋轉矩陣
     Mat4 r;
-    for(int i=0;i<4;i++){   
-        for(int j=0;j<4;j++)
-        if (i==j){
-         r.m[i][j]=1;}
+    for(int i = 0; i < 4; i++){   
+        for(int j = 0; j < 4; j++)
+        if (i == j){
+         r.m[i][j] = 1;}
         else {
-         r.m[i][j]=0;}
+         r.m[i][j] = 0;}
         }
-        r.m[0][0]=cos(angle);
-        r.m[0][1]=-sin(angle);
-        r.m[1][0]=sin(angle);
-        r.m[1][1]=cos(angle);
+        r.m[0][0] = cos(angle);
+        r.m[0][1] = -sin(angle);
+        r.m[1][0] = sin(angle);
+        r.m[1][1] = cos(angle);
         return r;
     }
     static Mat4 rotationX(float angle) {//x旋轉矩陣
@@ -101,38 +101,90 @@ struct Mat4{//4*4矩陣
         else {
          r.m[i][j]=0;}
         }
-        r.m[1][1]=cos(angle);
-        r.m[1][2]=-sin(angle);
-        r.m[2][1]=sin(angle);
-        r.m[2][2]=cos(angle);
+        r.m[1][1] = cos(angle);
+        r.m[1][2] = -sin(angle);
+        r.m[2][1] = sin(angle);
+        r.m[2][2] = cos(angle);
         return r;
     }
     static Mat4 rotationY(float angle) {//y旋轉矩陣
     Mat4 r;
-    for(int i=0;i<4;i++){   
-        for(int j=0;j<4;j++)
-        if (i==j){
-         r.m[i][j]=1;}
+    for(int i = 0; i < 4; i++){   
+        for(int j = 0; j < 4; j++)
+        if (i == j){
+         r.m[i][j]= 1;}
         else {
-         r.m[i][j]=0;}
+         r.m[i][j]= 0;}
         }
-        r.m[0][0]=cos(angle);
-        r.m[0][2]=-sin(angle);
-        r.m[2][0]=sin(angle);
-        r.m[2][2]=cos(angle);
+        r.m[0][0] = cos(angle);
+        r.m[0][2] = -sin(angle);
+        r.m[2][0] = sin(angle);
+        r.m[2][2] = cos(angle);
         return r;
     }
+    static Mat4 lookAt(Vec3 eye, Vec3 center, Vec3 up){//之後優化,eye鏡頭位置,center鏡頭看的方向,up鏡頭向上方向
+        Vec3 forward = (center - eye).normalize();
+        Vec3 right = (forward.cross(up)).normalize();
+        Vec3 camUp = (right.cross(forward)).normalize();
+        Mat4 r{};
+        for(int i = 0; i < 4; i++){   
+            for(int j = 0; j < 4; j++)
+            if (i == j){
+            r.m[i][j] = 1;}
+            else {
+            r.m[i][j]= 0 ;}
+            }
+            r.m[0][0] = right.x;
+            r.m[0][1] = right.y;
+            r.m[0][2] = right.z;
+            r.m[0][3] = -right.dot(eye);
+            r.m[1][0] = camUp.x;
+            r.m[1][1] = camUp.y;
+            r.m[1][2] = camUp.z;
+            r.m[1][3] = -camUp.dot(eye);
+            r.m[2][0] = -forward.x;
+            r.m[2][1] = -forward.y;
+            r.m[2][2] = -forward.z;
+            r.m[2][3] = forward.dot(eye);
+            return r;
+    }
+    static Mat4 perspective(float fovY, float aspect, float near, float far) {
+    Mat4 r{};
+    for(int i = 0;i < 4;i++){   
+        for(int j = 0;j < 4;j++)
+        if (i == j){
+        r.m[i][j] = 1;}
+        else {
+        r.m[i][j] = 0;}
+        }
+        float t = tan(fovY / 2);
+        r.m[0][0] = 1 / (aspect*t);
+        r.m[1][1] = 1 / t;
+        r.m[2][2] = -(far+near)/(far-near);
+        r.m[2][3] = -(2*far*near)/(far-near);
+        r.m[3][2] = -1;
+        r.m[3][3] = 0;
+        return r;
+    }
+    Vec3 operator*(const Vec3& v)const{//透視除法
+        float x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3];
+        float y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3];
+        float z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3];
+        float w = m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3];
+        return Vec3(x/w, y/w, z/w);
+    }
+
 };
 
 struct Color{//顏色
     uint8_t a ,r, g, b;
 };
 
-struct Framebutte{//畫布,斜線,解析度,三角形,光柵化
+struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
     int width = 1920;//解析度寬度
     int height = 1080;//解析度高度
     std::vector< Color > pixels;
-    Framebutte() : pixels(width * height){};
+    Framebuffer() : pixels(width * height){};
     void setpixels (int x, int y, Color c){
         if(x >= 0 && x < width && y >= 0 && y < height){//判斷是否出界
             pixels [width * y + x] = c;
@@ -189,36 +241,38 @@ struct Framebutte{//畫布,斜線,解析度,三角形,光柵化
             }   
         }
     }
-    void drawtriangle(Vec3 v0, Vec3 v1, Vec3 v2, Color c){
-        int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );//Vec3轉換螢幕座標
-        int y0 = (int)( (v0.y / v0.z) * (height/ 2) + (height/ 2) );
-
-        int x1 = (int)( (v1.x / v1.z) * (width / 2) + (width / 2) );
-        int y1 = (int)( (v1.y / v1.z) * (height/ 2) + (height/ 2) );
-
-        int x2 = (int)( (v2.x / v2.z) * (width / 2) + (width / 2) );
-        int y2 = (int)( (v2.y / v2.z) * (height/ 2) + (height/ 2) );
+    void drawtriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp, Color c){
+        Vec3 p0 = mvp * v0;
+        Vec3 p1 = mvp * v1;
+        Vec3 p2 = mvp * v2;
+        int x0 = (int)((p0.x + 1) * width / 2);//Vec3轉換螢幕座標
+        int y0 = (int)((1 + p0.y) * height / 2);
+        int x1 = (int)((p1.x + 1) * width / 2);
+        int y1 = (int)((1 + p1.y) * height / 2);
+        int x2 = (int)((p2.x + 1) * width / 2);
+        int y2 = (int)((1 + p2.y) * height / 2);
 
         drawLine(x0, y0, x1, y1, c);
         drawLine(x0, y0, x2, y2, c);
         drawLine(x1, y1, x2, y2, c);
     } 
-    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Color c){
-        int x0 = (int)( (v0.x / v0.z) * (width / 2) + (width / 2) );//Vec3轉換螢幕座標
-        int y0 = (int)( (v0.y / v0.z) * (height/ 2) + (height/ 2) );
-
-        int x1 = (int)( (v1.x / v1.z) * (width / 2) + (width / 2) );
-        int y1 = (int)( (v1.y / v1.z) * (height/ 2) + (height/ 2) );
-
-        int x2 = (int)( (v2.x / v2.z) * (width / 2) + (width / 2) );
-        int y2 = (int)( (v2.y / v2.z) * (height/ 2) + (height/ 2) );
+    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp, Color c){
+        Vec3 p0 = mvp * v0;
+        Vec3 p1 = mvp * v1;
+        Vec3 p2 = mvp * v2;
+        int x0 = (int)((p0.x + 1) * width / 2);//Vec3轉換螢幕座標
+        int y0 = (int)((1 + p0.y) * height / 2);
+        int x1 = (int)((p1.x + 1) * width / 2);
+        int y1 = (int)((1 + p1.y) * height / 2);
+        int x2 = (int)((p2.x + 1) * width / 2);
+        int y2 = (int)((1 + p2.y) * height / 2);
 
         int maxX = std::max(x0, std::max (x1, x2) );//畫出四邊形
         int minX = std::min(x0, std::min (x1, x2) );
         int maxY = std::max(y0, std::max (y1, y2) );
         int minY = std::min(y0, std::min (y1, y2) );
 
-        for(int x = minX; x <= maxX; x++){//
+        for(int x = minX; x <= maxX; x++){//用外積決定在三角形線左邊還右邊
             for(int y = minY; y <= maxY; y++){
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
                 int cross1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
@@ -237,7 +291,7 @@ struct triangle{
     Vec3 v2;
 };
 
-struct Model{
+struct Model{//obj導入
     std::vector <triangle> triangles;
 
     bool loadobj(std::string filename){
@@ -262,39 +316,52 @@ struct Model{
             }
             return true;
         }
-   
-   
-    
 };
 
+
 int main(){
-    Framebutte fb;
-    fb.clear({255, 255, 0, 0});
-    
-    Model myModel;       // 這是你的模型貨櫃
-    triangle t;          // 這是你剛做好的手工三角形
-    t.v0.x = 0; t.v0.y = 0; t.v0.z = 1.0;
-    t.v1.x = 1; t.v1.y = 0; t.v1.z = 1.0;
-    t.v2.x = 0; t.v2.y = 1; t.v2.z = 1.0;
-    
+    Framebuffer fb;
+    fb.clear({255, 255, 255, 255});
+    Model myModel;
+    Mat4 M = Mat4::identity();
+    Mat4 V = Mat4::lookAt({0, 0, 5}, {0, 0, 0}, {0, 1, 0});
+    Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 100.0f);
+    Mat4 mvp = P * V * M;
 
-    myModel.triangles.push_back(t);
-
-    // 💡 呼叫畫三角形的函式，把畫布 fb 和模型裡的三角形丟進去
-    // fb.drawtriangle(
-    //     myModel.triangles[0].v0,
-    //     myModel.triangles[0].v1,
-    //     myModel.triangles[0].v2,
-    //     {255, 255, 255, 255}
-    // );
-
-    fb.drawtriangle(
-    myModel.triangles[0].v0, 
-    myModel.triangles[0].v1, 
-    myModel.triangles[0].v2, 
-    Color{255, 255, 255, 255}
-    );
-    myModel.triangles.push_back(t);
+    // t.v0 = {0.0, 0.5, 0.0};
+    // t.v1 = {0.5, -0.5, 0.0};
+    // t.v2 = {-0.5, -0.5, 0.0};
+    std::vector <Vec3> cubeVerts = {
+    {-0.5, -0.5, -0.5},//後左下0
+    { 0.5, -0.5, -0.5},//後右下1
+    { 0.5,  0.5, -0.5},//後右上2
+    {-0.5,  0.5, -0.5},//後左上3
+    {-0.5, -0.5,  0.5},//前左下4
+    { 0.5, -0.5,  0.5},//前右下5
+    { 0.5,  0.5,  0.5},//前右上6
+    {-0.5,  0.5,  0.5},//前左下7
+    };
+    int indices[] = {
+        0,1,2, 0,2,3,//後面
+        4,5,6, 4,6,7,//前面
+        1,2,5, 2,5,6,//右面
+        0,3,4, 3,4,7,//左面
+        2,3,6, 3,6,7,//上面
+        0,1,4, 0,4,5,//下面
+    };
+    int indicesCount = sizeof(indices) / sizeof(indices[0]);
+    for(int i = 0; i < indicesCount; i += 3){
+        triangle t;
+        t.v0 = cubeVerts[indices[i]];
+        t.v1 = cubeVerts[indices[1+i]];
+        t.v2 = cubeVerts[indices[2+i]];
+        myModel.triangles.push_back(t);
+    }
+    for(int i = 0; i < myModel.triangles.size(); i++){
+        fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[1+i].v1, myModel.triangles[2+i].v2, mvp, {255,0,0,0});
+    }
+    // fb.drawtriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
+    // fb.filltriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
     
     fb.savePPM("output.ppm");
     return 0;
