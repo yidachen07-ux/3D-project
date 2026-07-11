@@ -184,7 +184,8 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
     int width = 1920;//解析度寬度
     int height = 1080;//解析度高度
     std::vector< Color > pixels;
-    Framebuffer() : pixels(width * height){};
+    std::vector< float >zBuffer;
+    Framebuffer() : pixels(width * height), zBuffer(width * height, std::numeric_limits<float>::max()){};
     void setpixels (int x, int y, Color c){
         if(x >= 0 && x < width && y >= 0 && y < height){//判斷是否出界
             pixels [width * y + x] = c;
@@ -251,6 +252,9 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         int y1 = (int)((1 + p1.y) * height / 2);
         int x2 = (int)((p2.x + 1) * width / 2);
         int y2 = (int)((1 + p2.y) * height / 2);
+        int z0 = v0.z;
+        int z1 = v1.z;
+        int z2 = v2.z;
 
         drawLine(x0, y0, x1, y1, c);
         drawLine(x0, y0, x2, y2, c);
@@ -266,6 +270,9 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         int y1 = (int)((1 + p1.y) * height / 2);
         int x2 = (int)((p2.x + 1) * width / 2);
         int y2 = (int)((1 + p2.y) * height / 2);
+        float z0 = p0.z;
+        float z1 = p1.z;
+        float z2 = p2.z;
 
         int maxX = std::max(x0, std::max (x1, x2) );//畫出四邊形
         int minX = std::min(x0, std::min (x1, x2) );
@@ -277,8 +284,13 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
                 int cross1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
                 int cross2 = (x0 - x2) * (y - y2) - (y0 - y2) * (x - x2);
+                int z = (cross0 * z2 + cross1 * z0 + cross2 * z1) / (cross0 + cross1 + cross2);                
                 if(cross0 >= 0 && cross1 >= 0 && cross2 >= 0 || cross0 <= 0 && cross1 <= 0 && cross2 <= 0){
+                    if(z < zBuffer[width * y + x]){
+                    zBuffer[width * y + x] = z;
                     setpixels(x, y, c);
+                    }
+                    
                 }
             }
         }
@@ -310,7 +322,7 @@ struct Model{//obj導入
                 iss >> prefix >> x >> y >> z;
                 vertices.push_back(Vec3(x, y, z));
             }
-            if(line[0]=='f'){
+            if(line[0] == 'f'){
                 
             }
             }
@@ -324,7 +336,7 @@ int main(){
     fb.clear({255, 255, 255, 255});
     Model myModel;
     Mat4 M = Mat4::identity();
-    Mat4 V = Mat4::lookAt({0, 0, 5}, {0, 0, 0}, {0, 1, 0});
+    Mat4 V = Mat4::lookAt({6, 10, 5}, {0, 0, 0}, {0, 1, 0});
     Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 100.0f);
     Mat4 mvp = P * V * M;
 
@@ -342,13 +354,20 @@ int main(){
     {-0.5,  0.5,  0.5},//前左下7
     };
     int indices[] = {
-        0,1,2, 0,2,3,//後面
-        4,5,6, 4,6,7,//前面
-        1,2,5, 2,5,6,//右面
-        0,3,4, 3,4,7,//左面
-        2,3,6, 3,6,7,//上面
-        0,1,4, 0,4,5,//下面
-    };
+    // 後面 (面向 Z = -0.5)
+    1, 0, 3,   1, 3, 2,
+    // 前面 (面向 Z = 0.5)
+    4, 5, 6,   4, 6, 7,
+    // 右面 (面向 X = 0.5)
+    5, 1, 2,   5, 2, 6,
+    // 左面 (面向 X = -0.5)
+    0, 4, 7,   0, 7, 3,
+    // 上面 (面向 Y = 0.5)
+    7, 6, 2,   7, 2, 3,
+    // 下面 (面向 Y = -0.5)
+    4, 5, 1,   4, 1, 0
+};
+    
     int indicesCount = sizeof(indices) / sizeof(indices[0]);
     for(int i = 0; i < indicesCount; i += 3){
         triangle t;
@@ -358,7 +377,7 @@ int main(){
         myModel.triangles.push_back(t);
     }
     for(int i = 0; i < myModel.triangles.size(); i++){
-        fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[1+i].v1, myModel.triangles[2+i].v2, mvp, {255,0,0,0});
+        fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, {255,0,0,0});
     }
     // fb.drawtriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
     // fb.filltriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
