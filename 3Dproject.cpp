@@ -305,7 +305,6 @@ struct triangle{
 
 struct Model{//obj導入
     std::vector <triangle> triangles;
-
     bool loadobj(std::string filename){
         std::ifstream file(filename);
         if(!file.is_open()){
@@ -323,11 +322,24 @@ struct Model{//obj導入
                 vertices.push_back(Vec3(x, y, z));
             }
             if(line[0] == 'f'){
-                
+                std::istringstream iss(line);
+                std::string prefix;
+                triangle t;
+                std::string s0, s1, s2;
+                iss >> prefix >> s0 >> s1 >> s2;
+                int p0 = std::stoi(s0);  // 自動取 / 前面的數字
+                int p1 = std::stoi(s1);
+                int p2 = std::stoi(s2);
+                std::cout << "f: " << p0 << " " << p1 << " " << p2 << std::endl;
+                std::cout << "vertices size: " << vertices.size() << std::endl;
+                t.v0 = vertices[p0 - 1];
+                t.v1 = vertices[p1 - 1];
+                t.v2 = vertices[p2 - 1];
+                triangles.push_back(t); 
             }
-            }
-            return true;
         }
+            return true;
+    }
 };
 
 
@@ -336,51 +348,53 @@ int main(){
     fb.clear({255, 255, 255, 255});
     Model myModel;
     Mat4 M = Mat4::identity();
-    Mat4 V = Mat4::lookAt({6, 10, 5}, {0, 0, 0}, {0, 1, 0});
+    Mat4 V = Mat4::lookAt({0, 10, 5}, {0, 0, 0}, {0, 1, 0});
     Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 100.0f);
     Mat4 mvp = P * V * M;
+    myModel.loadobj("cat.obj");
 
     // t.v0 = {0.0, 0.5, 0.0};
     // t.v1 = {0.5, -0.5, 0.0};
     // t.v2 = {-0.5, -0.5, 0.0};
-    std::vector <Vec3> cubeVerts = {
-    {-0.5, -0.5, -0.5},//後左下0
-    { 0.5, -0.5, -0.5},//後右下1
-    { 0.5,  0.5, -0.5},//後右上2
-    {-0.5,  0.5, -0.5},//後左上3
-    {-0.5, -0.5,  0.5},//前左下4
-    { 0.5, -0.5,  0.5},//前右下5
-    { 0.5,  0.5,  0.5},//前右上6
-    {-0.5,  0.5,  0.5},//前左下7
-    };
-    int indices[] = {
-    // 後面 (面向 Z = -0.5)
-    1, 0, 3,   1, 3, 2,
-    // 前面 (面向 Z = 0.5)
-    4, 5, 6,   4, 6, 7,
-    // 右面 (面向 X = 0.5)
-    5, 1, 2,   5, 2, 6,
-    // 左面 (面向 X = -0.5)
-    0, 4, 7,   0, 7, 3,
-    // 上面 (面向 Y = 0.5)
-    7, 6, 2,   7, 2, 3,
-    // 下面 (面向 Y = -0.5)
-    4, 5, 1,   4, 1, 0
-};
+//     std::vector <Vec3> cubeVerts = {
+//     {-0.5, -0.5, -0.5},//後左下0
+//     { 0.5, -0.5, -0.5},//後右下1
+//     { 0.5,  0.5, -0.5},//後右上2
+//     {-0.5,  0.5, -0.5},//後左上3
+//     {-0.5, -0.5,  0.5},//前左下4
+//     { 0.5, -0.5,  0.5},//前右下5
+//     { 0.5,  0.5,  0.5},//前右上6
+//     {-0.5,  0.5,  0.5},//前左下7
+//     };
+//     int indices[] = {
+//     // 後面 (面向 Z = -0.5)
+//     1, 0, 3,   1, 3, 2,
+//     // 前面 (面向 Z = 0.5)
+//     4, 5, 6,   4, 6, 7,
+//     // 右面 (面向 X = 0.5)
+//     5, 1, 2,   5, 2, 6,
+//     // 左面 (面向 X = -0.5)
+//     0, 4, 7,   0, 7, 3,
+//     // 上面 (面向 Y = 0.5)
+//     7, 6, 2,   7, 2, 3,
+//     // 下面 (面向 Y = -0.5)
+//     4, 5, 1,   4, 1, 0
+// };
     
-    int indicesCount = sizeof(indices) / sizeof(indices[0]);
-    for(int i = 0; i < indicesCount; i += 3){
-        triangle t;
-        t.v0 = cubeVerts[indices[i]];
-        t.v1 = cubeVerts[indices[1+i]];
-        t.v2 = cubeVerts[indices[2+i]];
-        myModel.triangles.push_back(t);
-    }
+//    int indicesCount = sizeof(indices) / sizeof(indices[0]);
+    // for(int i = 0; i < myModel.triangles.size(); i += 3){
+    //     triangle t;
+    //     t.v0 = cubeVerts[indices[i]];
+    //     t.v1 = cubeVerts[indices[1+i]];
+    //     t.v2 = cubeVerts[indices[2+i]];
+    //     myModel.triangles.push_back(t);
+    // }
     for(int i = 0; i < myModel.triangles.size(); i++){
         fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, {255,0,0,0});
     }
     // fb.drawtriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
     // fb.filltriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
+    std::cout << "loaded " << myModel.triangles.size() << " triangles" << std::endl;
     
     fb.savePPM("output.ppm");
     return 0;
