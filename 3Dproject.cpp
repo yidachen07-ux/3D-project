@@ -279,14 +279,19 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         int maxY = std::max(y0, std::max (y1, y2) );
         int minY = std::min(y0, std::min (y1, y2) );
 
+        minX = std::max(0,minX);//螢幕,三角形邊界檢查
+        maxX = std::min(width-1,maxX);
+        minY = std::max(0,minY);
+        maxY = std::min(height-1,maxY);
+
         for(int x = minX; x <= maxX; x++){//用外積決定在三角形線左邊還右邊
             for(int y = minY; y <= maxY; y++){
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
                 int cross1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
                 int cross2 = (x0 - x2) * (y - y2) - (y0 - y2) * (x - x2);
-                int z = (cross0 * z2 + cross1 * z0 + cross2 * z1) / (cross0 + cross1 + cross2);                
+                int z = (cross0 * z2 + cross1 * z0 + cross2 * z1) / (cross0 + cross1 + cross2);//zbuffer
                 if(cross0 >= 0 && cross1 >= 0 && cross2 >= 0 || cross0 <= 0 && cross1 <= 0 && cross2 <= 0){
-                    if(z < zBuffer[width * y + x]){
+                    if(z < zBuffer[width * y + x]){//zbuffer比較
                     zBuffer[width * y + x] = z;
                     setpixels(x, y, c);
                     }
@@ -304,25 +309,25 @@ struct triangle{
 };
 
 struct Model{//obj導入
-    std::vector <triangle> triangles;
-    bool loadobj(std::string filename){
+    std::vector <triangle> triangles;//宣告一個heap動態記憶體區域裝triangle
+    bool loadobj(std::string filename){//文件讀取
         std::ifstream file(filename);
         if(!file.is_open()){
             std::cout << "error";
             return false;
         }
         std::string line;
-        std::vector <Vec3> vertices;
+        std::vector <Vec3> vertices;//宣告一個heap動態記憶體區域裝Vec3
         while(std::getline(file,line)){
             if (line[0]=='v'){
-                std::istringstream iss(line);
-                std::string prefix;
+                std::istringstream iss(line);//讀取,例:v 1 2 3(istringstream字串流)
+                std::string prefix;//字串
                 float x, y, z;
                 iss >> prefix >> x >> y >> z;
                 vertices.push_back(Vec3(x, y, z));
             }
             if(line[0] == 'f'){
-                std::istringstream iss(line);
+                std::istringstream iss(line);//讀取,例:f 1 2 3
                 std::string prefix;
                 triangle t;
                 std::string s0, s1, s2;
@@ -330,9 +335,9 @@ struct Model{//obj導入
                 int p0 = std::stoi(s0);  // 自動取 / 前面的數字
                 int p1 = std::stoi(s1);
                 int p2 = std::stoi(s2);
-                std::cout << "f: " << p0 << " " << p1 << " " << p2 << std::endl;
-                std::cout << "vertices size: " << vertices.size() << std::endl;
-                t.v0 = vertices[p0 - 1];
+                //std::cout << "f: " << p0 << " " << p1 << " " << p2 << std::endl;//測試
+                //std::cout << "vertices size: " << vertices.size() << std::endl;//測試
+                t.v0 = vertices[p0 - 1];//obj檔頂點從1開始
                 t.v1 = vertices[p1 - 1];
                 t.v2 = vertices[p2 - 1];
                 triangles.push_back(t); 
@@ -348,14 +353,14 @@ int main(){
     fb.clear({255, 255, 255, 255});
     Model myModel;
     Mat4 M = Mat4::identity();
-    Mat4 V = Mat4::lookAt({0, 10, 5}, {0, 0, 0}, {0, 1, 0});
+    Mat4 V = Mat4::lookAt({3000, 1000, 2000}, {0, 0, 0}, {0, 1, 0});
     Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 100.0f);
     Mat4 mvp = P * V * M;
     myModel.loadobj("cat.obj");
 
-    // t.v0 = {0.0, 0.5, 0.0};
-    // t.v1 = {0.5, -0.5, 0.0};
-    // t.v2 = {-0.5, -0.5, 0.0};
+//     t.v0 = {0.0, 0.5, 0.0};
+//     t.v1 = {0.5, -0.5, 0.0};
+//     t.v2 = {-0.5, -0.5, 0.0};
 //     std::vector <Vec3> cubeVerts = {
 //     {-0.5, -0.5, -0.5},//後左下0
 //     { 0.5, -0.5, -0.5},//後右下1
@@ -382,13 +387,13 @@ int main(){
 // };
     
 //    int indicesCount = sizeof(indices) / sizeof(indices[0]);
-    // for(int i = 0; i < myModel.triangles.size(); i += 3){
-    //     triangle t;
-    //     t.v0 = cubeVerts[indices[i]];
-    //     t.v1 = cubeVerts[indices[1+i]];
-    //     t.v2 = cubeVerts[indices[2+i]];
-    //     myModel.triangles.push_back(t);
-    // }
+//     for(int i = 0; i < myModel.triangles.size(); i += 3){
+//         triangle t;
+//         t.v0 = cubeVerts[indices[i]];
+//         t.v1 = cubeVerts[indices[1+i]];
+//         t.v2 = cubeVerts[indices[2+i]];
+//         myModel.triangles.push_back(t);
+//     }
     for(int i = 0; i < myModel.triangles.size(); i++){
         fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, {255,0,0,0});
     }
