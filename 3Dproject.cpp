@@ -9,6 +9,7 @@
 struct Vec3;
 struct Mat4;
 struct Color;
+struct triangle;
 struct Framebutte;
 struct drawline;
 
@@ -180,6 +181,19 @@ struct Color{//顏色
     uint8_t a ,r, g, b;
 };
 
+struct triangle{
+    Vec3 v0;
+    Vec3 v1;
+    Vec3 v2;
+
+    Vec3 getNormal() const{ 
+    Vec3 edge1 = v1 - v0;
+    Vec3 edge2 = v2 - v0;
+    Vec3 rawNormal = edge1.cross(edge2);
+    return rawNormal.normalize();
+    }
+};
+
 struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
     int width = 1920;//解析度寬度
     int height = 1080;//解析度高度
@@ -260,10 +274,12 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         drawLine(x0, y0, x2, y2, c);
         drawLine(x1, y1, x2, y2, c);
     } 
-    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp, Color c){
+    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp,Vec3 lightDir, Color c){
         Vec3 p0 = mvp * v0;
         Vec3 p1 = mvp * v1;
         Vec3 p2 = mvp * v2;
+        Vec3 normal = triangle{v0, v1, v2}.getNormal();
+
         int x0 = (int)((p0.x + 1) * width / 2);//Vec3轉換螢幕座標
         int y0 = (int)((1 + p0.y) * height / 2);
         int x1 = (int)((p1.x + 1) * width / 2);
@@ -284,6 +300,12 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         minY = std::max(0,minY);
         maxY = std::min(height-1,maxY);
 
+        float intensity = std::max(0.0f, lightDir.dot(normal));
+
+        Color litColor = {
+            c.a, (uint8_t)(c.r*intensity), (uint8_t)(c.g*intensity), (uint8_t)(c.b*intensity)
+        };
+
         for(int x = minX; x <= maxX; x++){//用外積決定在三角形線左邊還右邊
             for(int y = minY; y <= maxY; y++){
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
@@ -293,20 +315,15 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
                 if(cross0 >= 0 && cross1 >= 0 && cross2 >= 0 || cross0 <= 0 && cross1 <= 0 && cross2 <= 0){
                     if(z < zBuffer[width * y + x]){//zbuffer比較
                     zBuffer[width * y + x] = z;
-                    setpixels(x, y, c);
-                    }
-                    
+                    setpixels(x, y, litColor);
+                    }  
                 }
             }
         }
     }
 };
 
-struct triangle{
-    Vec3 v0;
-    Vec3 v1;
-    Vec3 v2;
-};
+
 
 struct Model{//obj導入
     std::vector <triangle> triangles;//宣告一個heap動態記憶體區域裝triangle
@@ -353,9 +370,10 @@ int main(){
     fb.clear({255, 255, 255, 255});
     Model myModel;
     Mat4 M = Mat4::identity();
-    Mat4 V = Mat4::lookAt({3000, 1000, 2000}, {0, 0, 0}, {0, 1, 0});
+    Mat4 V = Mat4::lookAt({2000, 600, 900}, {0, 0, 0}, {0, 1, 0});
     Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 100.0f);
     Mat4 mvp = P * V * M;
+    
     myModel.loadobj("cat.obj");
 
 //     t.v0 = {0.0, 0.5, 0.0};
@@ -394,8 +412,11 @@ int main(){
 //         t.v2 = cubeVerts[indices[2+i]];
 //         myModel.triangles.push_back(t);
 //     }
+
+
+    Vec3 lightDir(0.0f, 0.0f, 1.0f);//光照
     for(int i = 0; i < myModel.triangles.size(); i++){
-        fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, {255,0,0,0});
+        fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, lightDir, {255,100,100,100});
     }
     // fb.drawtriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
     // fb.filltriangle(myModel.triangles[0].v0, myModel.triangles[0].v1, myModel.triangles[0].v2, mvp, {255, 0, 0, 0});
