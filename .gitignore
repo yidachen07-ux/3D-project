@@ -5,6 +5,6 @@
 !*.cpp
 !*.ppm
 !.gitignore
-
+!*.h
 # 3. 另外確保隱藏的系統垃圾不會進來
 .DS_Store
