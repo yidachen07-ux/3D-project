@@ -1,6 +1,6 @@
-#include<iostream>
-#include<fstream>
-#include<sstream>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <fstream>
 #include <cstdint>
 #include <algorithm>
@@ -57,11 +57,11 @@ int main(){
 
     float pitch = 0.0f;//滑鼠上下視角
     float yaw = -3.14159f / 2.0f;;//滑鼠左右視角
-    float sensitivity = 0.03f;//滑鼠靈敏度
+    float sensitivity = 0.003f;//滑鼠靈敏度
 
     float ctrlCamX = 1000.0f;//移動相機位置
     float ctrlCamY = 0.0f;
-    float ctrlCamZ = 0.0f;
+    float ctrlCamZ = 1000.0f;
     Vec3 camXYZ{ctrlCamX, ctrlCamY, ctrlCamZ};
     Vec3 lightDir(0.0f, 0.0f, 1.0f);//光照
 
@@ -78,20 +78,20 @@ int main(){
         int msX,msY;
         uint32_t mouseMove = SDL_GetRelativeMouseState(&msX, &msY);
         
-        if(mouseMove & SDL_BUTTON(SDL_BUTTON_LEFT)){
+        if(mouseMove & SDL_BUTTON(SDL_BUTTON_LEFT)){//滑鼠控制
             yaw += msX * sensitivity;
             pitch -= msY * sensitivity;
-            if (pitch > 1.55f) pitch = 1.55f;
-            if (pitch < -1.55f) pitch = -1.55f;
+            if (pitch > 1.40f) pitch = 1.40f;
+            if (pitch < -1.40f) pitch = -1.40f;
         }
         float viewX = cos(pitch) * sin(yaw);
-        float viewY = sin(pitch);
+        float viewY = -sin(pitch);
         float viewZ = cos(pitch) * cos(yaw);
         float speed = 50.0f;
 
         
-        Vec3 forward(viewX, viewY, viewZ);
-        Vec3 up(0, 1, 0);
+        Vec3 forward(viewX, viewY, viewZ);//包裝函數向前
+        Vec3 up(0, 1, 0);//向上
         Vec3 right = (forward.cross(up)).normalize();
         
 

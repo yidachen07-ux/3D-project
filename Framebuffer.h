@@ -18,9 +18,9 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         }
     }
     void clear (Color c){//畫出畫布
-        for (int i = 0; i < width; i++){
-            for(int j = 0; j < height; j++)
-            setpixels(i, j, c);
+        for (int y = 0; y < height; y++){
+            for(int x = 0; x < width; x++)
+            setpixels(x, y, c);
         }
     }
     void savePPM(const std::string& filename){//畫布匯出.ppm
@@ -72,12 +72,14 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         Vec3 p0 = mvp * v0;
         Vec3 p1 = mvp * v1;
         Vec3 p2 = mvp * v2;
+
         int x0 = (int)((p0.x + 1) * width / 2);//Vec3轉換螢幕座標
         int y0 = (int)((1 - p0.y) * height / 2);
         int x1 = (int)((p1.x + 1) * width / 2);
         int y1 = (int)((1 - p1.y) * height / 2);
         int x2 = (int)((p2.x + 1) * width / 2);
         int y2 = (int)((1 - p2.y) * height / 2);
+
         int z0 = v0.z;
         int z1 = v1.z;
         int z2 = v2.z;
@@ -87,11 +89,19 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         drawLine(x1, y1, x2, y2, c);
     } 
     void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp,Vec3 lightDir, Color c){
-        Vec3 p0 = mvp * v0;
-        Vec3 p1 = mvp * v1;
-        Vec3 p2 = mvp * v2;
-        Vec3 normal = triangle{v0, v1, v2}.getNormal();
+        Vec4 transform;
+        Vec4 c0 = mvp.transform(v0);
+        Vec4 c1 = mvp.transform(v1);
+        Vec4 c2 = mvp.transform(v2);
 
+        if(c0.w < 0.5f || c1.w < 0.5f || c2.w < 0.5f){
+            return;
+        }
+        
+        Vec3 p0 = {c0.x / c0.w, c0.y / c0.w, c0.z / c0.w};
+        Vec3 p1 = {c1.x / c1.w, c1.y / c1.w, c1.z / c1.w};
+        Vec3 p2 = {c2.x / c2.w, c2.y / c2.w, c2.z / c2.w};
+        
         int x0 = (int)((p0.x + 1) * width / 2);//Vec3轉換螢幕座標
         int y0 = (int)((1 - p0.y) * height / 2);
         int x1 = (int)((p1.x + 1) * width / 2);
@@ -113,14 +123,18 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         minY = std::max(0,minY);
         maxY = std::min(height-1,maxY);
 
+        Vec3 normal = triangle{v0, v1, v2}.getNormal();
         float intensity = std::max(0.0f, lightDir.dot(normal));
 
         Color litColor = {
             c.a, (uint8_t)(c.r*intensity), (uint8_t)(c.g*intensity), (uint8_t)(c.b*intensity)
         };
 
-        for(int x = minX; x <= maxX; x++){//用外積決定在三角形線左邊還右邊
-            for(int y = minY; y <= maxY; y++){
+        
+        
+
+        for(int y = minY; y <= maxY; y++){//用外積決定在三角形線左邊還右邊
+            for(int x = minX; x <= maxX; x++){
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
                 int cross1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
                 int cross2 = (x0 - x2) * (y - y2) - (y0 - y2) * (x - x2);

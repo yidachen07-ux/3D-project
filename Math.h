@@ -17,6 +17,10 @@ struct Vec3{//operator定義符號+-*/
     Vec3 cross(const Vec3& other) const {return Vec3( y*other.z-other.y*z, z*other.x-other.z*x, x*other.y-other.x*y);}//向量外積 
     
 };
+struct Vec4{
+    float x, y, z, w;
+};
+
 struct Mat4{//4*4矩陣
         float m[4][4];
     static Mat4 identity(){//對角矩陣
@@ -140,29 +144,39 @@ struct Mat4{//4*4矩陣
             return r;
     }
     static Mat4 perspective(float fovY, float aspect, float near, float far) {
-    Mat4 r{};
-    for(int i = 0;i < 4;i++){   
-        for(int j = 0;j < 4;j++)
-        if (i == j){
-        r.m[i][j] = 1;}
-        else {
-        r.m[i][j] = 0;}
+        Mat4 r{};
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (i == j) {
+                    r.m[i][j] = 1;
+                } else {
+                    r.m[i][j] = 0;
+                }
+            }
         }
         float t = tan(fovY / 2);
-        r.m[0][0] = 1 / (aspect*t);
+        r.m[0][0] = 1 / (aspect * t);
         r.m[1][1] = 1 / t;
-        r.m[2][2] = -(far+near)/(far-near);
-        r.m[2][3] = -(2*far*near)/(far-near);
+        r.m[2][2] = -(far + near) / (far - near);
+        r.m[2][3] = -(2 * far * near) / (far - near);
         r.m[3][2] = -1;
         r.m[3][3] = 0;
         return r;
     }
-    Vec3 operator*(const Vec3& v)const{//透視除法
+
+    Vec4 transform(const Vec3& v) const { // 透視除法
         float x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3];
         float y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3];
         float z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3];
         float w = m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3];
-        return Vec3(x/w, y/w, z/w);
+        return Vec4{x, y, z, w};
     }
 
+    Vec3 operator*(const Vec3& v) const { // 透視除法
+        float x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3];
+        float y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3];
+        float z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3];
+        float w = m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3];
+        return Vec3(x / w, y / w, z / w);
+    }
 };
