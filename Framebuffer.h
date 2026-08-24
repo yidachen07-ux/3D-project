@@ -89,7 +89,6 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         drawLine(x1, y1, x2, y2, c);
     } 
     void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp,Vec3 lightDir, Color c){
-        Vec4 transform;
         Vec4 c0 = mvp.transform(v0);
         Vec4 c1 = mvp.transform(v1);
         Vec4 c2 = mvp.transform(v2);
@@ -101,7 +100,7 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         Vec3 p0 = {c0.x / c0.w, c0.y / c0.w, c0.z / c0.w};
         Vec3 p1 = {c1.x / c1.w, c1.y / c1.w, c1.z / c1.w};
         Vec3 p2 = {c2.x / c2.w, c2.y / c2.w, c2.z / c2.w};
-        
+
         int x0 = (int)((p0.x + 1) * width / 2);//Vec3轉換螢幕座標
         int y0 = (int)((1 - p0.y) * height / 2);
         int x1 = (int)((p1.x + 1) * width / 2);

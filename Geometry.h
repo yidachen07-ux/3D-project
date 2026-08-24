@@ -17,3 +17,10 @@ struct triangle{
     return rawNormal.normalize();
     }
 };
+
+struct ray{
+    Vec3 origin;
+    Vec3 direction;
+    
+
+};
