@@ -143,7 +143,7 @@ struct Mat4{//4*4矩陣
             r.m[2][3] = forward.dot(eye);
             return r;
     }
-    static Mat4 perspective(float fovY, float aspect, float near, float far) {
+    static Mat4 perspective(float fovY, float aspect, float near, float far) {//視角大小,長寬比,近裁剪面,遠裁剪面
         Mat4 r{};
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {

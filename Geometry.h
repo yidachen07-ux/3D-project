@@ -1,8 +1,8 @@
-#pragma once
+ #pragma once
 #include<iostream>
 #include"Math.h"
 struct Color{//顏色
-    uint8_t a ,r, g, b;
+    uint8_t b, g, r, a;
 };
 
 struct triangle{
@@ -21,6 +21,4 @@ struct triangle{
 struct ray{
     Vec3 origin;
     Vec3 direction;
-    
-
 };

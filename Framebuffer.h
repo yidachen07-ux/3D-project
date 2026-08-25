@@ -4,6 +4,7 @@
 #include <fstream>
 #include <algorithm>
 #include <limits>
+#include <thread>
 #include "Math.h"
 #include "Geometry.h"
 struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
@@ -129,9 +130,6 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
             c.a, (uint8_t)(c.r*intensity), (uint8_t)(c.g*intensity), (uint8_t)(c.b*intensity)
         };
 
-        
-        
-
         for(int y = minY; y <= maxY; y++){//用外積決定在三角形線左邊還右邊
             for(int x = minX; x <= maxX; x++){
                 int cross0 = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0);
@@ -147,4 +145,39 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
             }
         }
     }
+    void renderRaytrace(Vec3 camPos,Vec3 forward, Vec3 right, Vec3 up, const Mat4& P){
+        float invWidth  = 2.0f / (float)width;
+        float invHeight = 2.0f / (float)height;
+
+        unsigned int numThreads = std::thread::hardware_concurrency();
+        if (numThreads == 0) numThreads = 8;
+
+        int rowsPerThread = height / numThreads;
+        std::vector<std::thread> threads;
+           for (unsigned int i = 0; i < numThreads; i++) {
+        int yStart = i * rowsPerThread;
+            
+        int yEnd = (i == numThreads - 1) ? height : (i + 1) * rowsPerThread;
+
+        threads.emplace_back([=, &P]() {
+            for (int y = yStart; y < yEnd; y++) {
+                for (int x = 0; x < width; x++) {                
+                    float u = ((x + 0.5f) * invWidth - 1.0f) / P.m[0][0];//寬標準化（中心點）
+                    float v = (1.0f - (y + 0.5f) * invHeight) / P.m[1][1];//長標準化（中心點）
+                    Vec3 rayDir = (forward + right * u + up * v).normalize();
+
+                    float t = 0.5f * (rayDir.y + 1.0f);
+                    uint8_t r = (uint8_t)((1.0f-t) * 255.0f + t * 130.0f);//顏色混合
+                    uint8_t g = (uint8_t)((1.0f-t) * 255.0f + t * 180.0f);//顏色混合
+                    uint8_t b = (uint8_t)((1.0f-t) * 255.0f + t * 255.0f);//顏色混合
+
+                    pixels[width * y + x] = {b, g, r, 255};//著色
+                }
+            }
+        });
+    }
+        for (auto& t : threads) {
+            t.join();
+        }
+    };
 };
