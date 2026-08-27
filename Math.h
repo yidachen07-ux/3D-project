@@ -7,15 +7,14 @@ struct Vec3{//operator定義符號+-*/
     Vec3 (float x, float y, float z) : x(x), y(y), z(z) {}
     Vec3 operator+(const Vec3& other) const { return Vec3(x+other.x, y+other.y, z+other.z); }//向量加法
     Vec3 operator-(const Vec3& other) const { return Vec3(x-other.x, y-other.y, z-other.z); }//向量減法
-    Vec3 operator*(float s) const { return Vec3(x*s, y*s, z*s); }//向量乘法
-    Vec3 operator/(float s) const { return Vec3(x/s, y/s, z/s); }//向量除法
-    Vec3& operator+=(const Vec3& other) {x += other.x;y += other.y;z += other.z;return *this;}
-    Vec3& operator-=(const Vec3& other) {x -= other.x;y -= other.y;z -= other.z;return *this;}
-    float length() const { return sqrt ( x*x + y*y + z*z ); }//向量長度
-    Vec3 normalize() const { return Vec3 ( x/length(), y/length(), z/length()); }//標準化1
-    float dot(const Vec3& other) const {return ( x*other.x+ y*other.y+ z*other.z); }//向量內積
-    Vec3 cross(const Vec3& other) const {return Vec3( y*other.z-other.y*z, z*other.x-other.z*x, x*other.y-other.x*y);}//向量外積 
-    
+    Vec3 operator*(float s) const { return Vec3(x * s, y * s, z * s); }//向量乘法
+    Vec3 operator/(float s) const { return Vec3(x / s, y / s, z / s); }//向量除法
+    Vec3& operator+=(const Vec3& other) {x += other.x; y += other.y; z += other.z; return *this;}
+    Vec3& operator-=(const Vec3& other) {x -= other.x; y -= other.y; z -= other.z; return *this;}
+    float length() const { return sqrt (x * x + y * y + z * z); }//向量長度
+    Vec3 normalize() const { return Vec3 (x / length(), y / length(), z / length()); }//標準化1
+    float dot(const Vec3& other) const {return (x * other.x+ y * other.y+ z * other.z); }//向量內積
+    Vec3 cross(const Vec3& other) const {return Vec3(y * other.z-other.y * z, z * other.x-other.z * x, x * other.y-other.x * y);}//向量外積   
 };
 struct Vec4{
     float x, y, z, w;

@@ -117,7 +117,7 @@ struct Window{
             //std::cout << "Cam: " << ctrlCamX << " , " << ctrlCamY << " , " << ctrlCamZ << std::endl;
 
         fb.clear({255,255,255,255});
-        Mat4 M = Mat4::rotationY(angle += 0.02f);
+        Mat4 M = Mat4::rotationY(angle += 0.5f);
         Mat4 V = Mat4::lookAt(camXYZ, camXYZ + Vec3{viewX, viewY, viewZ}, {0, 1, 0});
         Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 10000.0f);
         fb.renderRaytrace(camXYZ, forward, right, up, P);
@@ -125,9 +125,9 @@ struct Window{
         Mat4 mvp = P * V * M;
         
 
-        for(int i = 0; i < myModel.triangles.size(); i++){//畫出模型
-            fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, lightDir, {255,100,100,100});
-        }
+        // for(int i = 0; i < myModel.triangles.size(); i++){//畫出模型
+        //     fb.filltriangle(myModel.triangles[i].v0, myModel.triangles[i].v1, myModel.triangles[i].v2, mvp, lightDir, {255,100,100,100},M);
+        // }
         return isRunning;
     }
 
@@ -137,5 +137,21 @@ struct Window{
             SDL_RenderCopy(renderer, texture, NULL, NULL);
             SDL_RenderPresent(renderer);
             SDL_Delay(16);
+    }
+
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+
+    ~Window(){
+        if(texture != nullptr){
+            isRunning = false;
+        }
+        if(renderer != nullptr){
+            isRunning = false;
+        }
+        if(window != nullptr){
+            isRunning = false;
+        }
+        SDL_Quit();
     }
 };

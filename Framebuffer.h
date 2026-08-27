@@ -18,12 +18,14 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
             pixels [width * y + x] = c;
         }
     }
+
     void clear (Color c){//畫出畫布
         for (int y = 0; y < height; y++){
             for(int x = 0; x < width; x++)
             setpixels(x, y, c);
         }
     }
+
     void savePPM(const std::string& filename){//畫布匯出.ppm
         std::ofstream outfile(filename);
         outfile << "P3\n";
@@ -38,6 +40,7 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         }
         outfile.close();
     }
+
     void drawLine(int x0, int y0, int x1 ,int y1, Color c){
         bool steep = std::abs(x0 - x1) < std::abs(y0 - y1);//if steep 1=ture
         if (steep){//如果斜率大於一把x軸y軸調換(以x=y調換)
@@ -69,6 +72,7 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
             }   
         }
     }
+
     void drawtriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp, Color c){
         Vec3 p0 = mvp * v0;
         Vec3 p1 = mvp * v1;
@@ -88,8 +92,9 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         drawLine(x0, y0, x1, y1, c);
         drawLine(x0, y0, x2, y2, c);
         drawLine(x1, y1, x2, y2, c);
-    } 
-    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp,Vec3 lightDir, Color c){
+    }
+
+    void filltriangle(Vec3 v0, Vec3 v1, Vec3 v2, Mat4 mvp,Vec3 lightDir, Color c,const Mat4& M){
         Vec4 c0 = mvp.transform(v0);
         Vec4 c1 = mvp.transform(v1);
         Vec4 c2 = mvp.transform(v2);
@@ -123,8 +128,13 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         minY = std::max(0,minY);
         maxY = std::min(height-1,maxY);
 
-        Vec3 normal = triangle{v0, v1, v2}.getNormal();
-        float intensity = std::max(0.0f, lightDir.dot(normal));
+        Vec3 w0 = M * v0;
+        Vec3 w1 = M * v1;
+        Vec3 w2 = M * v2;
+        Vec3 worldNormal = triangle{w0, w1, w2}.getNormal();
+        
+    
+        float intensity = std::max(0.0f, lightDir.dot(worldNormal));
 
         Color litColor = {
             c.a, (uint8_t)(c.r*intensity), (uint8_t)(c.g*intensity), (uint8_t)(c.b*intensity)
@@ -145,6 +155,7 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
             }
         }
     }
+
     void renderRaytrace(Vec3 camPos,Vec3 forward, Vec3 right, Vec3 up, const Mat4& P){
         float invWidth  = 2.0f / (float)width;
         float invHeight = 2.0f / (float)height;
@@ -164,14 +175,17 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
                 for (int x = 0; x < width; x++) {                
                     float u = ((x + 0.5f) * invWidth - 1.0f) / P.m[0][0];//寬標準化（中心點）
                     float v = (1.0f - (y + 0.5f) * invHeight) / P.m[1][1];//長標準化（中心點）
-                    Vec3 rayDir = (forward + right * u + up * v).normalize();
+
+                    Vec3 rayDir = (forward + right * u + up * v).normalize();//算出ray方向
+                    Ray ray{ camPos, rayDir };
+                    pixels[width * y + x] = rayColor(ray);//著色
 
                     float t = 0.5f * (rayDir.y + 1.0f);
+
                     uint8_t r = (uint8_t)((1.0f-t) * 255.0f + t * 130.0f);//顏色混合
                     uint8_t g = (uint8_t)((1.0f-t) * 255.0f + t * 180.0f);//顏色混合
                     uint8_t b = (uint8_t)((1.0f-t) * 255.0f + t * 255.0f);//顏色混合
 
-                    pixels[width * y + x] = {b, g, r, 255};//著色
                 }
             }
         });
