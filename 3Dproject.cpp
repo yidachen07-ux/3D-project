@@ -11,7 +11,7 @@
 #include "Geometry.h"
 #include "Framebuffer.h"
 #include "Model.h"
-#include "window.h"
+#include "Window.h"
 
 int main(){
     

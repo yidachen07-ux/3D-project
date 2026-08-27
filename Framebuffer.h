@@ -7,6 +7,7 @@
 #include <thread>
 #include "Math.h"
 #include "Geometry.h"
+
 struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
     int width = 1920;//解析度寬度
     int height = 1080;//解析度高度
@@ -26,7 +27,7 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
         }
     }
 
-    void savePPM(const std::string& filename){//畫布匯出.ppm
+    void savePPM(const std::string& filename){//畫布匯出
         std::ofstream outfile(filename);
         outfile << "P3\n";
         outfile << width << " " << height << "\n";
@@ -155,43 +156,4 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
             }
         }
     }
-
-    void renderRaytrace(Vec3 camPos,Vec3 forward, Vec3 right, Vec3 up, const Mat4& P){
-        float invWidth  = 2.0f / (float)width;
-        float invHeight = 2.0f / (float)height;
-
-        unsigned int numThreads = std::thread::hardware_concurrency();
-        if (numThreads == 0) numThreads = 8;
-
-        int rowsPerThread = height / numThreads;
-        std::vector<std::thread> threads;
-           for (unsigned int i = 0; i < numThreads; i++) {
-        int yStart = i * rowsPerThread;
-            
-        int yEnd = (i == numThreads - 1) ? height : (i + 1) * rowsPerThread;
-
-        threads.emplace_back([=, &P]() {
-            for (int y = yStart; y < yEnd; y++) {
-                for (int x = 0; x < width; x++) {                
-                    float u = ((x + 0.5f) * invWidth - 1.0f) / P.m[0][0];//寬標準化（中心點）
-                    float v = (1.0f - (y + 0.5f) * invHeight) / P.m[1][1];//長標準化（中心點）
-
-                    Vec3 rayDir = (forward + right * u + up * v).normalize();//算出ray方向
-                    Ray ray{ camPos, rayDir };
-                    pixels[width * y + x] = rayColor(ray);//著色
-
-                    float t = 0.5f * (rayDir.y + 1.0f);
-
-                    uint8_t r = (uint8_t)((1.0f-t) * 255.0f + t * 130.0f);//顏色混合
-                    uint8_t g = (uint8_t)((1.0f-t) * 255.0f + t * 180.0f);//顏色混合
-                    uint8_t b = (uint8_t)((1.0f-t) * 255.0f + t * 255.0f);//顏色混合
-
-                }
-            }
-        });
-    }
-        for (auto& t : threads) {
-            t.join();
-        }
-    };
 };

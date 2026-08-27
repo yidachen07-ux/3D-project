@@ -6,9 +6,11 @@
 #include "Geometry.h"
 #include "Framebuffer.h"
 #include "Model.h"
+#include "Raytracer.h"
 struct Window{
     Framebuffer fb;
     Model myModel;
+    Raytracer rt;
 
     bool isRunning = true;
     
@@ -65,8 +67,8 @@ struct Window{
     float ctrlCamY = 0.0f;
     float ctrlCamZ = 1000.0f;
     float angle = 0.0f;
-    Vec3 camXYZ{ctrlCamX, ctrlCamY, ctrlCamZ};
-    Vec3 lightDir{0.0f, 0.0f, 1.0f};//光照
+    Vec3 camXYZ{ctrlCamX, ctrlCamY, ctrlCamZ};//打包相機
+    Vec3 lightDir{0.0f, 1.0f, 1.0f};//光照
 
     bool processEvents(){
         SDL_Event event;
@@ -116,11 +118,12 @@ struct Window{
 
             //std::cout << "Cam: " << ctrlCamX << " , " << ctrlCamY << " , " << ctrlCamZ << std::endl;
 
-        fb.clear({255,255,255,255});
+        fb.clear({255,0, 0, 0});
         Mat4 M = Mat4::rotationY(angle += 0.5f);
         Mat4 V = Mat4::lookAt(camXYZ, camXYZ + Vec3{viewX, viewY, viewZ}, {0, 1, 0});
         Mat4 P = Mat4::perspective(3.14159f / 3, 1920.0f / 1080.0f, 0.1f, 10000.0f);
-        fb.renderRaytrace(camXYZ, forward, right, up, P);
+        //fb.renderRaytrace(camXYZ, forward, right, up, P);
+        rt.render(fb, camXYZ, forward, right, up, P, lightDir);
         std::fill(fb.zBuffer.begin(), fb.zBuffer.end(), std::numeric_limits<float>::max());
         Mat4 mvp = P * V * M;
         

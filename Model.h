@@ -27,22 +27,24 @@ struct Model{//obj導入
                 vertices.push_back(Vec3(x, y, z));
             }
             if(line[0] == 'f'){
+                triangle t;
+
                 std::istringstream iss(line);//讀取,例:f 1 2 3
                 std::string prefix;
-                triangle t;
                 std::string s0, s1, s2;
+
                 iss >> prefix >> s0 >> s1 >> s2;
+
                 int p0 = std::stoi(s0);  // 自動取 / 前面的數字
                 int p1 = std::stoi(s1);
                 int p2 = std::stoi(s2);
-                //std::cout << "f: " << p0 << " " << p1 << " " << p2 << std::endl;//測試
-                //std::cout << "vertices size: " << vertices.size() << std::endl;//測試
+    
                 t.v0 = vertices[p0 - 1];//obj檔頂點從1開始
                 t.v1 = vertices[p1 - 1];
                 t.v2 = vertices[p2 - 1];
                 triangles.push_back(t); 
             }
         }
-            return true;
+        return true;
     }
 };
