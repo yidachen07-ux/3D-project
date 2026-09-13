@@ -11,8 +11,8 @@
 struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
     int width = 1920;//解析度寬度
     int height = 1080;//解析度高度
-    std::vector< Color > pixels;
-    std::vector< float >zBuffer;
+    std::vector<Color>pixels;
+    std::vector<float>zBuffer;
     Framebuffer() : pixels(width * height), zBuffer(width * height, std::numeric_limits<float>::max()){};
     void setpixels (int x, int y, Color c){
         if(x >= 0 && x < width && y >= 0 && y < height){//判斷是否出界
@@ -151,7 +151,7 @@ struct Framebuffer{//畫布,斜線,解析度,三角形,光柵化
                     if(z < zBuffer[width * y + x]){//zbuffer比較
                     zBuffer[width * y + x] = z;
                     setpixels(x, y, litColor);
-                    }  
+                    }
                 }
             }
         }

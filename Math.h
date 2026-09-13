@@ -179,3 +179,6 @@ struct Mat4{//4*4矩陣
         return Vec3(x / w, y / w, z / w);
     }
 };
+struct Color{//顏色
+    uint8_t b, g, r, a;
+};
